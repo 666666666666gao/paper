@@ -116,6 +116,7 @@ export const taxonomies: TaxonomyNode[] = [
           { id: '3-2-14', name: 'RGB-D Tracking', en: 'RGB-D Tracking' },
           { id: '3-2-15', name: 'UAV Tracking', en: 'UAV Tracking' },
           { id: '3-2-16', name: 'Event-based Tracking', en: 'Event-based Tracking' },
+          { id: '3-2-17', name: 'Point Tracking 点跟踪', en: 'Point Tracking' },
         ],
       },
     ],

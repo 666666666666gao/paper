@@ -47,3 +47,13 @@ npm run build
 项目已配置 GitHub Pages，仓库推送后会自动构建发布。
 
 详情见 [DEPLOY.md](./DEPLOY.md)。
+
+## License
+
+本项目内容采用 CC BY-NC-SA 4.0 授权。
+
+- 署名 - 使用时请注明出处
+- 非商业性使用 - 不得用于商业目的
+- 相同方式共享 - 修改后须以相同协议分享
+
+出处：https://github.com/zhaoyang97/Paper-Notes

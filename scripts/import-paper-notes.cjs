@@ -80,6 +80,7 @@ const categoryNames = {
   '3-2-14': 'RGB-D Tracking',
   '3-2-15': 'UAV Tracking',
   '3-2-16': 'Event-based Tracking',
+  '3-2-17': 'Point Tracking 点跟踪',
   '4-1-1': 'Fully-supervised Semantic Segmentation',
   '4-1-2': 'Weakly-supervised Semantic Segmentation',
   '4-1-3': 'Semi-supervised Semantic Segmentation',
@@ -319,10 +320,27 @@ function includesAny(text, words) {
   return words.some((word) => text.includes(word));
 }
 
+function matchesAny(text, patterns) {
+  return patterns.some((pattern) => pattern.test(text));
+}
+
 function classify(raw, dir) {
   const text = raw.toLowerCase();
   const isRemote = dir === 'remote_sensing' || includesAny(text, ['remote sensing', '遥感', 'sar image', 'satellite image']);
   const isMedical = dir === 'medical_imaging' || includesAny(text, ['medical', '医学', 'mri', 'ct ', 'x-ray', 'ultrasound', 'brain decoding', 'fmri', 'eeg']);
+  const isVisionGeneration = includesAny(text, ['diffusion', 'text-to-image', 'text to image', 'image generation', 'video generation', 'image editing', 'text-guided diffusion', '图像生成', '视频生成', '图像编辑']);
+  const isNlpSimilarity = matchesAny(text, [
+    /\bsentence embedding(s)?\b/,
+    /\btext embedding(s)?\b/,
+    /\btextual embedding(s)?\b/,
+    /\bsimilarity metric(s)?\b/,
+    /\bsemantic understanding\b/,
+    /\bisotrop(y|ic)\b/,
+    /\bintrinsic dimensionality\b/,
+    /\bprompt-based text\b/,
+    /\bmteb\b/,
+    /\bnlp\b/,
+  ]);
   const hasStrong3D = includesAny(text, [
     '3d ', '3d-', '3d_', 'point cloud', 'point-cloud', '点云', 'nerf', 'novel view',
     'view synthesis', 'depth estimation', 'stereo matching', 'lidar', 'monocular 3d', 'mesh', 'scene completion',
@@ -343,6 +361,22 @@ function classify(raw, dir) {
     if (includesAny(text, ['mllm', 'multimodal', 'vlm'])) return '10-7';
     return '10-1';
   }
+
+  if (includesAny(text, ['video super-resolution', 'video super resolution', 'video sr', '视频超分', '视频超分辨率'])) return '6-1-2';
+  if (includesAny(text, ['super-resolution', 'super resolution', 'image super-resolution', 'image super resolution', '超分辨率', '超分'])) {
+    if (includesAny(text, ['blind'])) return '6-1-3';
+    if (includesAny(text, ['real-world', 'real world', '真实世界'])) return '6-1-4';
+    if (includesAny(text, ['diffusion'])) return '6-1-5';
+    return '6-1-1';
+  }
+
+  if (isNlpSimilarity && !isVisionGeneration) {
+    if (includesAny(text, ['similarity', 'metric', 'embedding', 'isotropy', 'intrinsic dimensionality', 'mteb'])) return '12-12';
+  }
+
+  if (includesAny(text, ['ai-generated text', 'machine-generated text', 'llm-generated', 'textual creativity', 'text distribution', '文本检测', '机器文本检测'])) return '12-12';
+
+  if (includesAny(text, ['model compression', '模型压缩', 'lora merging', 'lora合并', 'module replacement', '模型合并', 'parameter-efficient fine-tuning', '低秩适配'])) return '11-7';
 
   if (includesAny(text, ['vector graphics', '矢量图形', 'bézier', 'bezier', 'bitmap primitives'])) return '12-13';
   if (includesAny(text, ['2d gaussian splatting', '2d gaussian', 'image representation', '图像表示'])) return '6-10';
@@ -366,6 +400,24 @@ function classify(raw, dir) {
     if (includesAny(text, ['mllm', 'multi-modal', 'multimodal', '思维链'])) return '4-4-4';
     return '4-4-1';
   }
+
+  if (!hasStrong3D && includesAny(text, ['semantic segmentation', 'image segmentation', 'dichotomous image segmentation', '语义分割', '图像分割', '二分图像分割'])) {
+    if (includesAny(text, ['weakly'])) return '4-1-2';
+    if (includesAny(text, ['semi-supervised'])) return '4-1-3';
+    if (includesAny(text, ['open-vocabulary'])) return '4-1-4';
+    if (includesAny(text, ['domain generalization', 'domain adaptation', '领域泛化', 'domain-adaptive'])) return '4-1-5';
+    return '4-1-1';
+  }
+
+  if (matchesAny(text, [/\bpoint tracking\b/, /\bpoint tracking\b/, /\bpoint tracker\b/, /点跟踪/, /点追踪/])) return '3-2-17';
+
+  if (includesAny(text, ['image restoration', '图像恢复', 'weather restoration', '恶劣天气', 'zero-shot image restoration'])) return '6-1-1';
+
+  if (includesAny(text, ['face reconstruction', '人脸重建'])) return '5-1-2';
+  if (includesAny(text, ['video diffusion', '视频扩散', 'video generation', '视频生成'])) return '5-2-1';
+  if (!includesAny(text, ['semantic segmentation', '语义分割', '图像分割']) && includesAny(text, ['text-to-image', 'text to image', '文本到图像', 'image editing', '图像编辑', 'diffusion-based image editing'])) return '5-4-1';
+  if (includesAny(text, ['safe text embedding guidance', 'unsafe content', 'sexual content generation', '安全生成'])) return '5-1-5';
+  if (includesAny(text, ['text-guided diffusion', 'text-to-image diffusion', 'diffusion models', 'diffusion model', '扩散模型'])) return '5-1-1';
 
   if (includesAny(text, ['gaussian splatting', '3dgs', '3d gaussian', 'gaussian-splatting'])) {
     if (includesAny(text, ['slam', 'simultaneous localization'])) return '2-1-3';
@@ -409,7 +461,16 @@ function classify(raw, dir) {
     return '2-7';
   }
 
-  if (dir === 'object_detection' || includesAny(text, ['object detection', '目标检测', 'detector', 'detection'])) {
+  if (dir === 'object_detection' || matchesAny(text, [
+    /\bobject detection\b/,
+    /\bvisual detection\b/,
+    /\bopen-vocabulary detection\b/,
+    /\bweakly-supervised detection\b/,
+    /\bsemi-supervised detection\b/,
+    /\bfew-shot detection\b/,
+    /\btiny object detection\b/,
+    /目标检测/,
+  ])) {
     if (includesAny(text, ['detr'])) return '3-1-5';
     if (includesAny(text, ['open-vocabulary', 'open vocabulary'])) return '3-1-6';
     if (includesAny(text, ['weakly'])) return '3-1-7';
@@ -424,7 +485,22 @@ function classify(raw, dir) {
     return '3-1-1';
   }
 
-  if (includesAny(text, ['visual tracking', 'object tracking', 'tracking', 'mot', 'sot', 'uav tracking'])) {
+  if (matchesAny(text, [
+    /\bvisual tracking\b/,
+    /\bobject tracking\b/,
+    /\bmulti object tracking\b/,
+    /\bmulti-object tracking\b/,
+    /\bsingle object tracking\b/,
+    /\bsot\b/,
+    /\bmot\b/,
+    /\btracking-by-detection\b/,
+    /\bjoint detection and tracking\b/,
+    /\blong-term tracking\b/,
+    /\brgb-t tracking\b/,
+    /\brgb-d tracking\b/,
+    /\buav tracking\b/,
+    /\bevent-based tracking\b/,
+  ])) {
     if (includesAny(text, ['multi object', 'multi-object', 'mot'])) return '3-2-7';
     if (includesAny(text, ['tracking-by-detection'])) return '3-2-8';
     if (includesAny(text, ['joint detection'])) return '3-2-9';
