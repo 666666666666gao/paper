@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color: #1f2933;
+    background: #fbfaf7;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply m-0 bg-paper text-ink antialiased;
+  }
+
+  a {
+    @apply text-inherit;
+  }
+}
+
+@layer utilities {
+  .research-grid {
+    background-image:
+      linear-gradient(rgba(31, 41, 51, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31, 41, 51, 0.045) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+}
