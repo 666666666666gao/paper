@@ -194,6 +194,8 @@ export const taxonomies: TaxonomyNode[] = [
           { id: '5-2-3', name: 'Long Video Generation', en: 'Long Video Generation' },
           { id: '5-2-4', name: 'Human Video Generation', en: 'Human Video Generation' },
           { id: '5-2-5', name: 'General Video Generation 通用视频生成', en: 'General Video Generation' },
+          { id: '5-2-6', name: 'Video Editing 视频编辑', en: 'Video Editing' },
+          { id: '5-2-7', name: 'Controllable Video Generation 可控视频生成', en: 'Controllable Video Generation' },
         ],
       },
       {
