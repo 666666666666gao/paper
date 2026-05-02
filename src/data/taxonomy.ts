@@ -49,9 +49,7 @@ export const taxonomies: TaxonomyNode[] = [
           { id: '2-2-5', name: 'Open-vocabulary 3DVG 开放词汇 3DVG', en: 'Open-vocabulary 3DVG' },
           { id: '2-2-6', name: 'LLM/VLM-based 3DVG', en: 'LLM/VLM-based 3DVG' },
           { id: '2-2-7', name: 'Embodied 3DVG 具身 3DVG', en: 'Embodied 3DVG' },
-          { id: '2-2-8', name: 'Object-level 3DVG', en: 'Object-level 3DVG' },
-          { id: '2-2-9', name: 'Region-level 3DVG', en: 'Region-level 3DVG' },
-          { id: '2-2-10', name: 'Mask-level 3DVG', en: 'Mask-level 3DVG' },
+          { id: '2-2-8', name: '3D Referring Segmentation 3D指代分割', en: '3D Referring Segmentation' },
         ],
       },
       { id: '2-3', name: 'NeRF', en: 'NeRF' },
@@ -69,6 +67,8 @@ export const taxonomies: TaxonomyNode[] = [
       { id: '2-15', name: 'Stereo Matching 立体匹配', en: 'Stereo Matching' },
       { id: '2-16', name: '3D Human Pose Estimation 3D人体姿态估计', en: '3D Human Pose Estimation' },
       { id: '2-17', name: '3D Human Mesh Estimation 3D人体 Mesh 估计', en: '3D Human Mesh Estimation' },
+      { id: '2-18', name: '3D Scene Understanding / 3D General', en: '3D Scene Understanding / 3D General' },
+      { id: '2-19', name: '3D Others 3D其他', en: '3D Others' },
     ],
   },
   {
@@ -193,6 +193,7 @@ export const taxonomies: TaxonomyNode[] = [
           { id: '5-2-2', name: 'Image-to-Video', en: 'Image-to-Video' },
           { id: '5-2-3', name: 'Long Video Generation', en: 'Long Video Generation' },
           { id: '5-2-4', name: 'Human Video Generation', en: 'Human Video Generation' },
+          { id: '5-2-5', name: 'General Video Generation 通用视频生成', en: 'General Video Generation' },
         ],
       },
       {
@@ -205,7 +206,7 @@ export const taxonomies: TaxonomyNode[] = [
           { id: '5-3-3', name: 'Single-view 3D Generation', en: 'Single-view 3D Generation' },
           { id: '5-3-4', name: 'Multi-view 3D Generation', en: 'Multi-view 3D Generation' },
           { id: '5-3-5', name: 'Mesh Generation', en: 'Mesh Generation' },
-          { id: '5-3-6', name: 'Gaussian Generation', en: 'Gaussian Generation' },
+          { id: '5-3-6', name: '3D Asset Generation', en: '3D Asset Generation' },
         ],
       },
       {
@@ -342,6 +343,8 @@ export const taxonomies: TaxonomyNode[] = [
       { id: '11-9', name: 'Quantization 量化', en: 'Quantization' },
       { id: '11-10', name: 'NAS 神经架构搜索', en: 'NAS' },
       { id: '11-11', name: 'Data Augmentation 数据增强', en: 'Data Augmentation' },
+      { id: '11-12', name: 'Model Compression 模型压缩', en: 'Model Compression' },
+      { id: '11-13', name: 'PEFT / Adapter Tuning 参数高效微调', en: 'PEFT / Adapter Tuning' },
     ],
   },
   {

@@ -34,9 +34,7 @@ const categoryNames = {
   '2-2-5': 'Open-vocabulary 3DVG 开放词汇 3DVG',
   '2-2-6': 'LLM/VLM-based 3DVG',
   '2-2-7': 'Embodied 3DVG 具身 3DVG',
-  '2-2-8': 'Object-level 3DVG',
-  '2-2-9': 'Region-level 3DVG',
-  '2-2-10': 'Mask-level 3DVG',
+  '2-2-8': '3D Referring Segmentation 3D指代分割',
   '2-3': 'NeRF',
   '2-4': 'Novel View Synthesis 新视点合成',
   '2-5': '3D Reconstruction 三维重建',
@@ -52,6 +50,8 @@ const categoryNames = {
   '2-15': 'Stereo Matching 立体匹配',
   '2-16': '3D Human Pose Estimation 3D人体姿态估计',
   '2-17': '3D Human Mesh Estimation 3D人体 Mesh 估计',
+  '2-18': '3D Scene Understanding / 3D General',
+  '2-19': '3D Others 3D其他',
   '3-1-1': 'One-stage Detection 一阶段检测',
   '3-1-2': 'Two-stage Detection 二阶段检测',
   '3-1-3': 'Anchor-based Detection',
@@ -108,12 +108,13 @@ const categoryNames = {
   '5-2-2': 'Image-to-Video',
   '5-2-3': 'Long Video Generation',
   '5-2-4': 'Human Video Generation',
+  '5-2-5': 'General Video Generation 通用视频生成',
   '5-3-1': 'Text-to-3D',
   '5-3-2': 'Image-to-3D',
   '5-3-3': 'Single-view 3D Generation',
   '5-3-4': 'Multi-view 3D Generation',
   '5-3-5': 'Mesh Generation',
-  '5-3-6': 'Gaussian Generation',
+  '5-3-6': '3D Asset Generation',
   '5-4-1': 'Text-guided Image Editing',
   '5-4-2': 'Instruction-based Editing',
   '5-4-3': 'Mask-guided Editing',
@@ -185,6 +186,8 @@ const categoryNames = {
   '11-9': 'Quantization 量化',
   '11-10': 'NAS 神经架构搜索',
   '11-11': 'Data Augmentation 数据增强',
+  '11-12': 'Model Compression 模型压缩',
+  '11-13': 'PEFT / Adapter Tuning 参数高效微调',
   '12-1': 'OCR',
   '12-2': 'Text Detection 文本检测',
   '12-3': 'GNN',
@@ -324,10 +327,149 @@ function matchesAny(text, patterns) {
   return patterns.some((pattern) => pattern.test(text));
 }
 
+function has3DVGSignal(text) {
+  return matchesAny(text, [
+    /\b3d visual grounding\b/,
+    /\b3dvg\b/,
+    /\b3d referring\b/,
+    /\b3d referred expression\b/,
+    /\b3d referring expression\b/,
+    /\breferit3d\b/,
+    /\bscanrefer\b/,
+    /\bnr3d\b/,
+    /\bsr3d\b/,
+  ]);
+}
+
+function isExplicit3DGS(text) {
+  return matchesAny(text, [
+    /\b3d gaussian splatting\b/,
+    /\b3d gaussian\b/,
+    /\b4d gaussian\b/,
+    /\b3dgs\b/,
+    /\bgaussian splatting\b/,
+    /\bgaussian-splatting\b/,
+    /\bgaussian slam\b/,
+    /\bgaussian avatar\b/,
+    /\bgaussian editing\b/,
+    /\bgaussian relighting\b/,
+  ]);
+}
+
+function classify3DGS(text) {
+  if (includesAny(text, ['slam', 'simultaneous localization'])) return '2-1-3';
+  if (includesAny(text, ['avatar', 'human gaussian', 'head avatar', 'animatable'])) return '2-1-4';
+  if (includesAny(text, ['edit', 'editing', 'editor', 'inpaint', 'remove'])) return '2-1-5';
+  if (includesAny(text, ['generation', 'generate', 'text-to-3d', 'image-to-3d', '4d generation'])) return '2-1-6';
+  if (includesAny(text, ['compress', 'compression', 'compact'])) return '2-1-7';
+  if (includesAny(text, ['relight', 'relighting', 'lighting'])) return '2-1-8';
+  if (includesAny(text, ['dynamic', '4d', 'deformable', 'motion', 'tracking'])) return '2-1-2';
+  return '2-1-1';
+}
+
+function is3DGenerationText(text) {
+  return matchesAny(text, [
+    /\btext-to-3d\b/,
+    /\btext to 3d\b/,
+    /\bimage-to-3d\b/,
+    /\bimage to 3d\b/,
+    /\bsingle-view 3d\b/,
+    /\bmulti-view 3d\b/,
+    /\bmesh generation\b/,
+    /\b3d asset generation\b/,
+    /\b3d generation\b/,
+    /\b3d shape generation\b/,
+    /\b3d object generation\b/,
+    /\bcad model generation\b/,
+  ]);
+}
+
+function classify3DGeneration(text) {
+  if (includesAny(text, ['image-to-3d', 'image to 3d'])) return '5-3-2';
+  if (includesAny(text, ['single-view', 'single view'])) return '5-3-3';
+  if (includesAny(text, ['multi-view', 'multi view'])) return '5-3-4';
+  if (includesAny(text, ['mesh'])) return '5-3-5';
+  if (includesAny(text, ['asset', 'shape generation', 'cad', 'object generation'])) return '5-3-6';
+  return '5-3-1';
+}
+
+function isVideoGenerationText(text) {
+  if (!matchesAny(text, [
+    /\bvideo generation\b/,
+    /\bvideo generative\b/,
+    /\bvideo synthesis\b/,
+    /\bvideo diffusion\b/,
+    /\btext-to-video\b/,
+    /\btext to video\b/,
+    /\bimage-to-video\b/,
+    /\bimage to video\b/,
+    /\bstory-to-video\b/,
+    /\bstory to video\b/,
+    /视频生成/,
+  ])) return false;
+  return matchesAny(text, [
+    /\btext-to-video\b/,
+    /\btext to video\b/,
+    /\bimage-to-video\b/,
+    /\bimage to video\b/,
+    /\bstory-to-video\b/,
+    /\bstory to video\b/,
+    /\blong video\b/,
+    /\bhuman video\b/,
+    /\bvideo generation\b/,
+  ]);
+}
+
+function inferExtraTags(text, categoryId) {
+  const tags = [];
+  if (categoryId === '3-1-5' || /\bdetr\b/.test(text)) tags.push('DETR');
+  if (categoryId.startsWith('2-2')) {
+    if (/\bobject-level\b/.test(text)) tags.push('object-level');
+    if (/\bregion-level\b/.test(text)) tags.push('region-level');
+    if (/\bmask-level\b/.test(text)) tags.push('mask-level');
+    if (/\bproposal-based\b/.test(text)) tags.push('proposal-based');
+    if (/\bindoor\b/.test(text)) tags.push('indoor');
+    if (/\boutdoor\b/.test(text)) tags.push('outdoor');
+    if (/\bscanrefer\b/.test(text)) tags.push('ScanRefer');
+    if (/\bnr3d\b/.test(text)) tags.push('NR3D');
+    if (/\bsr3d\b/.test(text)) tags.push('SR3D');
+  }
+  if (categoryId.startsWith('5-2')) {
+    if (/\bimage-to-video\b/.test(text) || /\bimage to video\b/.test(text)) tags.push('Image-to-Video');
+    if (/\btext-to-video\b/.test(text) || /\btext to video\b/.test(text) || /\bstory-to-video\b/.test(text)) tags.push('Text-to-Video');
+    if (/\bhuman video\b/.test(text)) tags.push('Human Video');
+    if (/\blong video\b/.test(text)) tags.push('Long Video');
+  }
+  if (categoryId === '11-12') tags.push('Model Compression');
+  if (categoryId === '11-13') tags.push('PEFT');
+  if (categoryId === '10-7') tags.push('Medical VLM');
+  return tags;
+}
+
 function classify(raw, dir) {
   const text = raw.toLowerCase();
   const isRemote = dir === 'remote_sensing' || includesAny(text, ['remote sensing', '遥感', 'sar image', 'satellite image']);
-  const isMedical = dir === 'medical_imaging' || includesAny(text, ['medical', '医学', 'mri', 'ct ', 'x-ray', 'ultrasound', 'brain decoding', 'fmri', 'eeg']);
+  const isMedical = dir === 'medical_imaging' || matchesAny(text, [
+    /\bmedical\b/,
+    /医学/,
+    /\bmri\b/,
+    /\bct\b/,
+    /\bx-ray\b/,
+    /\bultrasound\b/,
+    /\bbrain decoding\b/,
+    /\bfmri\b/,
+    /\beeg\b/,
+    /\bradiology\b/,
+    /\bpathology\b/,
+  ]);
+  const isMedicalMM = isMedical && matchesAny(text, [
+    /\bmllm\b/,
+    /\bmedical vlm\b/,
+    /\bvision-language\b/,
+    /\bmultimodal\b/,
+    /\blarge vision-language model\b/,
+    /\bvision-language model\b/,
+  ]);
   const isVisionGeneration = includesAny(text, ['diffusion', 'text-to-image', 'text to image', 'image generation', 'video generation', 'image editing', 'text-guided diffusion', '图像生成', '视频生成', '图像编辑']);
   const isNlpSimilarity = matchesAny(text, [
     /\bsentence embedding(s)?\b/,
@@ -352,6 +494,8 @@ function classify(raw, dir) {
     return '10-8';
   }
 
+  if (isMedicalMM) return '10-7';
+
   if (isMedical) {
     if (includesAny(text, ['segmentation', '分割'])) return '10-2';
     if (includesAny(text, ['detection', '检测'])) return '10-3';
@@ -370,13 +514,23 @@ function classify(raw, dir) {
     return '6-1-1';
   }
 
+  if (dir === 'video_understanding' || includesAny(text, ['video understanding', 'action detection', 'temporal action', 'video retrieval', 'video mllm', 'long video understanding'])) {
+    if (includesAny(text, ['action detection'])) return '7-2';
+    if (includesAny(text, ['temporal action'])) return '7-3';
+    if (includesAny(text, ['prediction'])) return '7-4';
+    if (includesAny(text, ['mllm', 'multimodal'])) return '7-5';
+    if (includesAny(text, ['retrieval'])) return '7-6';
+    return '7-1';
+  }
+
   if (isNlpSimilarity && !isVisionGeneration) {
     if (includesAny(text, ['similarity', 'metric', 'embedding', 'isotropy', 'intrinsic dimensionality', 'mteb'])) return '12-12';
   }
 
   if (includesAny(text, ['ai-generated text', 'machine-generated text', 'llm-generated', 'textual creativity', 'text distribution', '文本检测', '机器文本检测'])) return '12-12';
 
-  if (includesAny(text, ['model compression', '模型压缩', 'lora merging', 'lora合并', 'module replacement', '模型合并', 'parameter-efficient fine-tuning', '低秩适配'])) return '11-7';
+  if (includesAny(text, ['model compression', '模型压缩', 'inference acceleration', 'token pruning', 'module replacement', '模型合并'])) return '11-12';
+  if (includesAny(text, ['lora merging', 'lora合并', 'parameter-efficient fine-tuning', 'parameter-efficient', 'adapter', '低秩适配', 'peft'])) return '11-13';
 
   if (includesAny(text, ['vector graphics', '矢量图形', 'bézier', 'bezier', 'bitmap primitives'])) return '12-13';
   if (includesAny(text, ['2d gaussian splatting', '2d gaussian', 'image representation', '图像表示'])) return '6-10';
@@ -409,45 +563,46 @@ function classify(raw, dir) {
     return '4-1-1';
   }
 
-  if (matchesAny(text, [/\bpoint tracking\b/, /\bpoint tracking\b/, /\bpoint tracker\b/, /点跟踪/, /点追踪/])) return '3-2-17';
+  if (matchesAny(text, [/\bpoint tracking\b/, /\bpoint tracker\b/, /点跟踪/, /点追踪/])) return '3-2-17';
 
   if (includesAny(text, ['image restoration', '图像恢复', 'weather restoration', '恶劣天气', 'zero-shot image restoration'])) return '6-1-1';
 
+  if (isExplicit3DGS(text)) return classify3DGS(text);
+
   if (includesAny(text, ['face reconstruction', '人脸重建'])) return '5-1-2';
-  if (includesAny(text, ['video diffusion', '视频扩散', 'video generation', '视频生成'])) return '5-2-1';
+  if (includesAny(text, ['scene graph generation', '场景图生成'])) return '12-4';
+  if (isVideoGenerationText(text)) {
+    if (includesAny(text, ['image-to-video', 'image to video'])) return '5-2-2';
+    if (includesAny(text, ['human video', 'portrait video', 'human motion', 'character video', 'talking head'])) return '5-2-4';
+    if (includesAny(text, ['long video', 'long-form', 'multi-shot', 'story-to-video', 'narrative video'])) return '5-2-3';
+    if (includesAny(text, ['text-to-video', 'text to video', 'story-to-video'])) return '5-2-1';
+    return '5-2-5';
+  }
   if (!includesAny(text, ['semantic segmentation', '语义分割', '图像分割']) && includesAny(text, ['text-to-image', 'text to image', '文本到图像', 'image editing', '图像编辑', 'diffusion-based image editing'])) return '5-4-1';
   if (includesAny(text, ['safe text embedding guidance', 'unsafe content', 'sexual content generation', '安全生成'])) return '5-1-5';
   if (includesAny(text, ['text-guided diffusion', 'text-to-image diffusion', 'diffusion models', 'diffusion model', '扩散模型'])) return '5-1-1';
 
-  if (includesAny(text, ['gaussian splatting', '3dgs', '3d gaussian', 'gaussian-splatting'])) {
-    if (includesAny(text, ['slam', 'simultaneous localization'])) return '2-1-3';
-    if (includesAny(text, ['avatar', 'human gaussian', 'head avatar', 'animatable'])) return '2-1-4';
-    if (includesAny(text, ['edit', 'editing', 'editor', 'inpaint', 'remove'])) return '2-1-5';
-    if (includesAny(text, ['generation', 'generate', 'text-to-3d', 'image-to-3d', '4d generation'])) return '2-1-6';
-    if (includesAny(text, ['compress', 'compression', 'compact'])) return '2-1-7';
-    if (includesAny(text, ['relight', 'relighting', 'lighting'])) return '2-1-8';
-    if (includesAny(text, ['dynamic', '4d', 'deformable', 'motion', 'tracking'])) return '2-1-2';
-    return '2-1-1';
-  }
+  if (isExplicit3DGS(text)) return classify3DGS(text);
 
-  if (includesAny(text, ['3d visual grounding', '3dvg', '3d grounding', 'grounded 3d', '3d referring', 'referit3d', 'nr3d', 'sr3d'])) {
+  if (has3DVGSignal(text)) {
     if (includesAny(text, ['weakly', 'weakly-supervised', '弱监督'])) return '2-2-2';
     if (includesAny(text, ['semi-supervised', '半监督'])) return '2-2-3';
     if (includesAny(text, ['zero-shot', '零样本'])) return '2-2-4';
     if (includesAny(text, ['open-vocabulary', 'open vocabulary', '开放词汇'])) return '2-2-5';
     if (includesAny(text, ['llm', 'vlm', 'large language', 'vision-language'])) return '2-2-6';
     if (includesAny(text, ['embodied', 'navigation', 'robot'])) return '2-2-7';
-    if (includesAny(text, ['region'])) return '2-2-9';
-    if (includesAny(text, ['mask'])) return '2-2-10';
-    return includesAny(text, ['object']) ? '2-2-8' : '2-2-1';
+    if (includesAny(text, ['segmentation', 'referring segmentation', 'mask'])) return '2-2-8';
+    return '2-2-1';
   }
+
+  if (is3DGenerationText(text)) return classify3DGeneration(text);
 
   if (hasStrong3D) {
     if (includesAny(text, ['nerf', 'neural radiance'])) return '2-3';
     if (includesAny(text, ['novel view', 'view synthesis', '新视角', '新视点'])) return '2-4';
     if (includesAny(text, ['reconstruction', '重建'])) return '2-5';
-    if (includesAny(text, ['generation', 'text-to-3d', 'image-to-3d', '4d generation', '生成'])) return '2-6';
-    if (includesAny(text, ['point cloud', 'point-cloud', '点云'])) return '2-7';
+    if (includesAny(text, ['text-to-3d', 'image-to-3d', '3d generation', '3d asset generation', '3d shape generation', '3d object generation', 'mesh generation'])) return classify3DGeneration(text);
+    if (includesAny(text, ['point cloud', 'point-cloud', '点云', 'point mamba', 'point transformer'])) return '2-7';
     if (includesAny(text, ['3d object detection', '3d detection', '目标检测'])) return '2-8';
     if (includesAny(text, ['semantic segmentation', '语义分割'])) return '2-9';
     if (includesAny(text, ['instance segmentation', '实例分割'])) return '2-10';
@@ -458,10 +613,11 @@ function classify(raw, dir) {
     if (includesAny(text, ['stereo matching', '立体匹配'])) return '2-15';
     if (includesAny(text, ['human pose', '人体姿态'])) return '2-16';
     if (includesAny(text, ['human mesh', 'mesh recovery', 'smpl'])) return '2-17';
-    return '2-7';
+    if (includesAny(text, ['scene understanding', 'grounded scene understanding', 'scene reasoning', 'situation awareness', '3d llm', '3d vlm', '3d vision-language', 'generalist 3d', '3d foundation', 'open-vocabulary 3d'])) return '2-18';
+    return '2-19';
   }
 
-  if (dir === 'object_detection' || matchesAny(text, [
+  if ((dir === 'object_detection' || matchesAny(text, [
     /\bobject detection\b/,
     /\bvisual detection\b/,
     /\bopen-vocabulary detection\b/,
@@ -470,8 +626,16 @@ function classify(raw, dir) {
     /\bfew-shot detection\b/,
     /\btiny object detection\b/,
     /目标检测/,
+  ])) && !matchesAny(text, [
+    /\bvisual tracking\b/,
+    /\bobject tracking\b/,
+    /\bmulti object tracking\b/,
+    /\bmulti-object tracking\b/,
+    /\bmultiple object tracking\b/,
+    /\bsingle object tracking\b/,
+    /\breferring multi-object tracking\b/,
+    /\btracking-by-detection\b/,
   ])) {
-    if (includesAny(text, ['detr'])) return '3-1-5';
     if (includesAny(text, ['open-vocabulary', 'open vocabulary'])) return '3-1-6';
     if (includesAny(text, ['weakly'])) return '3-1-7';
     if (includesAny(text, ['semi-supervised'])) return '3-1-8';
@@ -482,6 +646,7 @@ function classify(raw, dir) {
     if (includesAny(text, ['anchor-free'])) return '3-1-4';
     if (includesAny(text, ['anchor'])) return '3-1-3';
     if (includesAny(text, ['two-stage', 'faster r-cnn'])) return '3-1-2';
+    if (includesAny(text, ['detr'])) return '3-1-5';
     return '3-1-1';
   }
 
@@ -501,19 +666,21 @@ function classify(raw, dir) {
     /\buav tracking\b/,
     /\bevent-based tracking\b/,
   ])) {
-    if (includesAny(text, ['multi object', 'multi-object', 'mot'])) return '3-2-7';
     if (includesAny(text, ['tracking-by-detection'])) return '3-2-8';
     if (includesAny(text, ['joint detection'])) return '3-2-9';
-    if (includesAny(text, ['graph'])) return '3-2-10';
-    if (includesAny(text, ['transformer'])) return '3-2-11';
     if (includesAny(text, ['referring', 'language-guided'])) return '3-2-12';
     if (includesAny(text, ['rgb-t', 'rgbt'])) return '3-2-13';
     if (includesAny(text, ['rgb-d', 'rgbd'])) return '3-2-14';
     if (includesAny(text, ['uav'])) return '3-2-15';
     if (includesAny(text, ['event-based', 'event camera'])) return '3-2-16';
+    if (includesAny(text, ['graph'])) return '3-2-10';
+    if (includesAny(text, ['transformer']) && includesAny(text, ['multi object', 'multi-object', 'multiple object', 'mot'])) return '3-2-11';
+    if (includesAny(text, ['multi object', 'multi-object', 'multiple object', 'mot'])) return '3-2-7';
+    if (includesAny(text, ['one-stream', 'one stream'])) return '3-2-2';
+    if (includesAny(text, ['two-stream', 'two stream'])) return '3-2-3';
     if (includesAny(text, ['siamese'])) return '3-2-4';
     if (includesAny(text, ['transformer'])) return '3-2-5';
-    if (includesAny(text, ['long-term'])) return '3-2-6';
+    if (includesAny(text, ['long-term', 'long term'])) return '3-2-6';
     return '3-2-1';
   }
 
@@ -543,18 +710,13 @@ function classify(raw, dir) {
   }
 
   if (dir === 'image_generation' || dir === 'video_generation' || includesAny(text, ['generation', 'editing', 'inpainting', 'avatar', 'talking head', 'style transfer'])) {
-    if (includesAny(text, ['video generation', 'text-to-video'])) {
-      if (includesAny(text, ['image-to-video'])) return '5-2-2';
-      if (includesAny(text, ['long video'])) return '5-2-3';
-      if (includesAny(text, ['human'])) return '5-2-4';
-      return '5-2-1';
-    }
-    if (includesAny(text, ['text-to-3d', 'image-to-3d', 'single-view 3d', 'multi-view 3d', 'mesh generation'])) {
-      if (includesAny(text, ['image-to-3d'])) return '5-3-2';
-      if (includesAny(text, ['single-view'])) return '5-3-3';
-      if (includesAny(text, ['multi-view'])) return '5-3-4';
-      if (includesAny(text, ['mesh'])) return '5-3-5';
-      return '5-3-1';
+    if (is3DGenerationText(text)) return classify3DGeneration(text);
+    if (isVideoGenerationText(text)) {
+      if (includesAny(text, ['image-to-video', 'image to video'])) return '5-2-2';
+      if (includesAny(text, ['human video', 'portrait video', 'human motion', 'character video', 'talking head'])) return '5-2-4';
+      if (includesAny(text, ['long video', 'long-form', 'multi-shot', 'story-to-video', 'narrative video'])) return '5-2-3';
+      if (includesAny(text, ['text-to-video', 'text to video', 'story-to-video'])) return '5-2-1';
+      return '5-2-5';
     }
     if (includesAny(text, ['avatar', 'talking head'])) {
       if (includesAny(text, ['talking head'])) return '5-5-2';
@@ -570,6 +732,7 @@ function classify(raw, dir) {
       if (includesAny(text, ['removal'])) return '5-4-5';
       return '5-4-1';
     }
+    if (is3DGenerationText(text)) return classify3DGeneration(text);
     if (includesAny(text, ['image-to-image'])) return '5-1-2';
     if (includesAny(text, ['personalized'])) return '5-1-3';
     if (includesAny(text, ['subject-driven', 'subject driven'])) return '5-1-4';
@@ -593,15 +756,6 @@ function classify(raw, dir) {
     if (includesAny(text, ['video compression'])) return '6-8';
     if (includesAny(text, ['compression'])) return '6-7';
     return '6-9';
-  }
-
-  if (dir === 'video_understanding' || includesAny(text, ['video understanding', 'action detection', 'temporal action', 'video retrieval', 'video mllm'])) {
-    if (includesAny(text, ['action detection'])) return '7-2';
-    if (includesAny(text, ['temporal action'])) return '7-3';
-    if (includesAny(text, ['prediction'])) return '7-4';
-    if (includesAny(text, ['mllm', 'multimodal'])) return '7-5';
-    if (includesAny(text, ['retrieval'])) return '7-6';
-    return '7-1';
   }
 
   if (dir === 'autonomous_driving' || includesAny(text, ['autonomous driving', 'lane detection', 'occupancy', 'trajectory prediction', 'motion forecasting'])) {
@@ -651,6 +805,8 @@ function classify(raw, dir) {
     if (includesAny(text, ['pruning'])) return '11-8';
     if (includesAny(text, ['quantization'])) return '11-9';
     if (includesAny(text, ['nas', 'architecture search'])) return '11-10';
+    if (includesAny(text, ['model compression', 'compression', 'inference acceleration', 'token pruning', 'pruning-aware'])) return '11-12';
+    if (includesAny(text, ['peft', 'parameter-efficient', 'adapter tuning', 'adapter', 'lora', 'prompt tuning', 'prefix tuning', 'fine-tuning'])) return '11-13';
     return '11-11';
   }
 
@@ -718,21 +874,22 @@ const papers = files.map((file, index) => {
   const yearMatch = (confLine || conferencePath).match(/20\d{2}/);
   const conference = conferenceMatch || conferencePath.replace(/\d+$/, '') || 'Unknown';
   const year = yearMatch ? Number(yearMatch[0]) : 0;
-  const tags = Array.from(
+  const baseTags = Array.from(
     new Set([
       ...frontmatterTags(text),
       ...pickLine(text, '关键词').split(/[,，、/]/).map(cleanInline),
       conference && year ? `${conference} ${year}` : conference,
     ].filter(Boolean)),
-  ).slice(0, 8);
+  );
   const field = pickLine(text, '领域');
   const arxivLine = pickLine(text, 'arXiv');
   const paperUrl = normalizeArxiv(firstMarkdownUrl(arxivLine) || firstMarkdownUrl(text.match(/https?:\/\/arxiv\.org\/(?:abs|pdf)\/[^\s)]+/i)?.[0] || ''));
   const code = codeInfo(text);
-  const searchable = `${title} ${field} ${tags.join(' ')} ${frontmatterValue(text, 'description')} ${dir}`;
+  const searchable = `${title} ${field} ${baseTags.join(' ')} ${frontmatterValue(text, 'description')} ${dir}`;
   const categoryId = classify(searchable, dir);
   const category = categoryNames[categoryId] || 'Others 其他';
   const pathValue = titleCaseFromId(categoryId).join(' / ');
+  const tags = Array.from(new Set([...baseTags, ...inferExtraTags(searchable.toLowerCase(), categoryId)])).slice(0, 12);
 
   return {
     id: makeId(rel, index),
