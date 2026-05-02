@@ -1,73 +1,49 @@
-# React + TypeScript + Vite
+# AI 顶会论文解读
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+一个静态论文索引网站，用来整理和浏览 AI、LLM、NLP、CV、3D Vision、Multimodal、Embodied AI 等方向的顶会论文。
 
-Currently, two official plugins are available:
+在线地址：
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+https://666666666666gao.github.io/paper/
 
-## React Compiler
+## 这个网站是干什么的
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+用于快速查找论文、按分类浏览、按会议筛选、按标签筛选，并查看论文标题、摘要、Paper 链接和 Code 链接。
 
-## Expanding the ESLint configuration
+## 主要功能
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 分类浏览
+- 关键词搜索
+- 会议筛选
+- 标签筛选
+- 论文卡片展示
+- 论文 Code / Paper 链接跳转
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 数据来源
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+论文数据由原站 `Paper-Notes` 的 `docs` 内容整理而来，并重新做了分类映射。
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 本地运行
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+默认访问地址：
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+http://127.0.0.1:5173/paper-notes/
 ```
+
+## 构建
+
+```bash
+npm run build
+```
+
+## 部署
+
+项目已配置 GitHub Pages，仓库推送后会自动构建发布。
+
+详情见 [DEPLOY.md](./DEPLOY.md)。
