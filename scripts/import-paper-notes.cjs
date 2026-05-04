@@ -117,6 +117,7 @@ const categoryNames = {
   '5-3-4': 'Multi-view 3D Generation',
   '5-3-5': 'Mesh Generation',
   '5-3-6': '3D Asset Generation',
+  '5-3-7': 'General 3D Generation',
   '5-4-1': 'Text-guided Image Editing',
   '5-4-2': 'Instruction-based Editing',
   '5-4-3': 'Mask-guided Editing',
@@ -343,6 +344,17 @@ function has3DVGSignal(text) {
   ]);
 }
 
+function classify3DVG(text) {
+  if (includesAny(text, ['weakly', 'weakly-supervised', '弱监督'])) return '2-2-2';
+  if (includesAny(text, ['semi-supervised', '半监督'])) return '2-2-3';
+  if (includesAny(text, ['zero-shot', '零样本'])) return '2-2-4';
+  if (includesAny(text, ['open-vocabulary', 'open vocabulary', '开放词汇'])) return '2-2-5';
+  if (includesAny(text, ['llm', 'vlm', 'large language', 'vision-language'])) return '2-2-6';
+  if (includesAny(text, ['embodied', 'navigation', 'robot'])) return '2-2-7';
+  if (includesAny(text, ['segmentation', 'referring segmentation', 'mask'])) return '2-2-8';
+  return '2-2-1';
+}
+
 function isExplicit3DGS(text) {
   return matchesAny(text, [
     /\b3d gaussian splatting\b/,
@@ -357,6 +369,7 @@ function isExplicit3DGS(text) {
     /\bgaussian avatar\b/,
     /\bgaussian editing\b/,
     /\bgaussian relighting\b/,
+    /\bgaussian surface\b/,
   ]);
 }
 
@@ -414,7 +427,47 @@ function classify3DGeneration(text) {
   if (includesAny(text, ['multi-view', 'multi view'])) return '5-3-4';
   if (includesAny(text, ['mesh'])) return '5-3-5';
   if (includesAny(text, ['asset', 'shape generation', 'cad', 'object generation', '3d content', '3d model generation', 'generated 3d object'])) return '5-3-6';
-  return '5-3-1';
+  return '5-3-7';
+}
+
+function hasPriority3DSignal(text) {
+  return (
+    isExplicit3DGS(text) ||
+    has3DVGSignal(text) ||
+    is3DGenerationText(text) ||
+    matchesAny(text, [
+      /\bnerf\b/,
+      /\bneural radiance\b/,
+      /\bnovel view synthesis\b/,
+      /\bnovel view\b/,
+      /\bview synthesis\b/,
+      /\bdynamic reconstruction\b/,
+      /\bdynamic mesh\b/,
+      /\bdynamic scene\b/,
+      /\bmesh modeling\b/,
+      /\bmesh reconstruction\b/,
+      /\bsurface reconstruction\b/,
+      /\bsurface tracking\b/,
+      /\b3d reconstruction\b/,
+      /\b3d visual grounding\b/,
+      /\b3dvg\b/,
+      /\bslam\b/,
+      /\bcamera tracking\b/,
+    ])
+  );
+}
+
+function classifyPriority3D(text) {
+  if (is3DGenerationText(text) && !isGaussianGenerationCoreText(text)) return classify3DGeneration(text);
+  if (isExplicit3DGS(text)) return classify3DGS(text);
+  if (has3DVGSignal(text)) return classify3DVG(text);
+  if (includesAny(text, ['nerf', 'neural radiance'])) return '2-3';
+  if (includesAny(text, ['novel view synthesis', 'novel view', 'view synthesis', '新视角', '新视点'])) return '2-4';
+  if (matchesAny(text, [/\b3d (object|target|vehicle|pedestrian|multi-object|multiple object) tracking\b/])) return '2-11';
+  if (includesAny(text, ['dynamic reconstruction', 'dynamic mesh', 'mesh modeling', 'mesh reconstruction', 'surface reconstruction', 'surface tracking', '3d reconstruction'])) return '2-5';
+  if (includesAny(text, ['slam', 'camera tracking'])) return '2-5';
+  if (includesAny(text, ['point tracking', 'point tracker', 'keypoint tracking', '3d keypoint tracking'])) return '2-18';
+  return undefined;
 }
 
 function isVideoGenerationText(text) {
@@ -539,20 +592,22 @@ function hasTrackingSignal(text) {
     /\btracking-by-detection\b/,
     /\bjoint detection and tracking\b/,
     /\blong-term tracking\b/,
+    /\blong term tracking\b/,
+    /\bsiamese tracking\b/,
+    /\btransformer tracking\b/,
+    /\breferring tracking\b/,
+    /\blanguage-guided tracking\b/,
     /\brgb-t tracking\b/,
     /\brgb-d tracking\b/,
     /\buav tracking\b/,
     /\bevent-based tracking\b/,
-    /\btracking\b/,
-    /跟踪/,
-    /追踪/,
   ]);
 }
 
 function classifyTracking(text) {
   if (includesAny(text, ['tracking-by-detection'])) return '3-2-8';
   if (includesAny(text, ['joint detection'])) return '3-2-9';
-  if (includesAny(text, ['referring', 'language-guided'])) return '3-2-12';
+  if (includesAny(text, ['referring tracking', 'language-guided tracking', 'referring', 'language-guided'])) return '3-2-12';
   if (includesAny(text, ['rgb-t', 'rgbt'])) return '3-2-13';
   if (includesAny(text, ['rgb-d', 'rgbd'])) return '3-2-14';
   if (includesAny(text, ['uav'])) return '3-2-15';
@@ -565,7 +620,7 @@ function classifyTracking(text) {
   if (includesAny(text, ['transformer']) && includesAny(text, ['multi object', 'multi-object', 'multiple object', 'mot'])) return '3-2-11';
   if (includesAny(text, ['multi object', 'multi-object', 'multiple object', 'mot'])) return '3-2-7';
   if (includesAny(text, ['transformer'])) return '3-2-5';
-  if (includesAny(text, ['long-term', 'long term'])) return '3-2-6';
+  if (includesAny(text, ['long-term tracking', 'long term tracking', 'long-term', 'long term'])) return '3-2-6';
   return '3-2-1';
 }
 
@@ -594,6 +649,7 @@ function hasClear3DSignal(text) {
     /\b3d scene graph\b/,
     /\b3d scene understanding\b/,
     /\b3d general\b/,
+    /\bgeneral 3d generation\b/,
     /3d视觉/,
     /三维/,
   ]);
@@ -744,6 +800,11 @@ function classify(raw, dir, titleText = '') {
     return '10-1';
   }
 
+  const priority3D = hasPriority3DSignal(text) ? classifyPriority3D(text) : undefined;
+  if (priority3D) {
+    return priority3D;
+  }
+
   if (hasTrackingSignal(text) && (dir === 'video_understanding' || dir === 'object_detection' || dir === 'video_generation' || /(tracking|跟踪|追踪)/i.test(text))) {
     return classifyTracking(text);
   }
@@ -829,14 +890,11 @@ function classify(raw, dir, titleText = '') {
     return '4-1-1';
   }
 
-  if (matchesAny(text, [/\bpoint tracking\b/, /\bpoint tracker\b/, /点跟踪/, /点追踪/])) return '3-2-17';
+  if (matchesAny(text, [/\bpoint tracking\b/, /\bpoint tracker\b/, /点跟踪/, /点追踪/]) && !hasPriority3DSignal(text)) return '3-2-17';
 
   if (includesAny(text, ['image restoration', '图像恢复', 'weather restoration', '恶劣天气', 'zero-shot image restoration'])) return '6-1-1';
 
   if (isVideoGenerationText(text)) return classifyVideoGeneration(text);
-
-  if (is3DGenerationText(text) && !isGaussianGenerationCoreText(text)) return classify3DGeneration(text);
-  if (isExplicit3DGS(text)) return classify3DGS(text);
 
   if (includesAny(text, ['face reconstruction', '人脸重建'])) return '5-1-2';
   if (includesAny(text, ['scene graph generation', '场景图生成']) && !includesAny(text, ['3d', '三维'])) return '12-4';

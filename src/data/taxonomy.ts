@@ -209,6 +209,7 @@ export const taxonomies: TaxonomyNode[] = [
           { id: '5-3-4', name: 'Multi-view 3D Generation', en: 'Multi-view 3D Generation' },
           { id: '5-3-5', name: 'Mesh Generation', en: 'Mesh Generation' },
           { id: '5-3-6', name: '3D Asset Generation', en: '3D Asset Generation' },
+          { id: '5-3-7', name: 'General 3D Generation', en: 'General 3D Generation' },
         ],
       },
       {

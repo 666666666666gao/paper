@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "check:classification": "node scripts/check-classification-regression.cjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
